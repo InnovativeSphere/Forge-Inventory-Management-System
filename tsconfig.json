@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "backend/modals/productSchema.js", "backend/middleware/auth.js"  ],
   "exclude": ["node_modules"]
 }
