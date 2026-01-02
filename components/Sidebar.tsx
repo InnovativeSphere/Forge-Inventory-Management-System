@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -11,6 +12,8 @@ import {
   FaBookmark,
   FaUser,
   FaSignOutAlt,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import "../app/global.css";
 
@@ -32,6 +35,7 @@ const navItems = [
 
 export default function Sidebar({ className = "" }: SidebarProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -40,85 +44,107 @@ export default function Sidebar({ className = "" }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={`
-        flex flex-col h-screen w-64
-        bg-[var(--color-surface)]
-        text-[var(--color-foreground)]
-        border-r border-[var(--color-border)]
-        shadow-lg
-        ${className}
-      `}
-    >
-      {/* Brand */}
-      <div className="flex flex-col items-center py-8 border-b border-[var(--color-border)]">
+    <>
+      {/* Mobile toggle button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg bg-[var(--color-accent)] text-[var(--color-background)] shadow-lg"
+      >
+        <FaBars />
+      </button>
+
+      {/* Mobile backdrop */}
+      {open && (
         <div
-          className="
-            w-14 h-14 rounded-full mb-2 flex items-center justify-center
-            bg-[var(--color-accent)] text-[var(--color-background)]
-            font-black text-xl select-none
-            shadow-inner
-          "
-        >
-          F
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 z-50 h-screen w-64
+          bg-[var(--color-surface)]
+          text-[var(--color-foreground)]
+          border-r border-[var(--color-border)]
+          shadow-lg
+          flex flex-col
+          transition-transform duration-300
+          ${open ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 md:static md:flex-shrink-0
+          ${className}
+        `}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[var(--color-accent)] text-[var(--color-background)]
+              flex items-center justify-center font-black shadow-inner">
+              F
+            </div>
+            <span className="text-sm font-semibold">Forge IMS</span>
+          </div>
+
+          {/* Close button on mobile */}
+          <button
+            onClick={() => setOpen(false)}
+            className="md:hidden text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+          >
+            <FaTimes />
+          </button>
         </div>
-        <span className="text-sm font-semibold tracking-wide text-[var(--color-foreground)]">
-          Forge IMS
-        </span>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="flex flex-col gap-2">
-          {navItems.map((item) => {
-            const isActive = router.pathname === item.path;
-            const Icon = item.icon;
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          <ul className="flex flex-col gap-1 px-3">
+            {navItems.map((item) => {
+              const isActive = router.pathname === item.path;
+              const Icon = item.icon;
 
-            return (
-              <li key={item.label}>
-                <Link
-                  href={item.path}
-                  className={`
-                    group flex items-center gap-4 px-6 py-3 text-sm font-medium rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? "bg-[var(--color-accent)] text-[var(--color-background)] shadow-[inset_0_0_10px_rgba(0,0,0,0.15)]"
-                      : "text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-[var(--color-accent)/20] hover:shadow-[0_2px_10px_rgba(0,0,0,0.08)]"
-                    }
-                  `}
-                >
-                  <Icon
+              return (
+                <li key={item.label}>
+                  <Link
+                    href={item.path}
+                    onClick={() => setOpen(false)} // close on mobile
                     className={`
-                      text-lg
-                      ${isActive ? "text-[var(--color-background)]" : "text-[var(--color-accent)] group-hover:text-[var(--color-foreground)]"}
-                      transition-colors duration-200
+                      flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium
+                      transition-all
+                      ${isActive
+                        ? "bg-[var(--color-accent)] text-[var(--color-background)]"
+                        : "text-[var(--color-muted)] hover:bg-[var(--color-accent)/20] hover:text-[var(--color-foreground)]"
+                      }
                     `}
-                  />
-                  <span className="whitespace-nowrap">{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  >
+                    <Icon
+                      className={`text-lg ${
+                        isActive
+                          ? "text-[var(--color-background)]"
+                          : "text-[var(--color-accent)]"
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      {/* Logout */}
-      <div className="px-4 py-6 border-t border-[var(--color-border)]">
-        <button
-          onClick={handleLogout}
-          className="
-            flex items-center gap-4 px-4 py-2
-            text-sm text-[var(--color-muted)]
-            hover:text-[var(--color-background)]
-            hover:bg-[var(--color-accent)]
-            hover:shadow-md
-            transition-all duration-150 interactive w-full rounded-lg
-          "
-        >
-          <FaSignOutAlt className="text-base" />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+        {/* Logout */}
+        <div className="px-4 py-4 border-t border-[var(--color-border)]">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-4 py-2 rounded-lg
+              text-sm text-[var(--color-muted)]
+              hover:bg-[var(--color-accent)] hover:text-[var(--color-background)]
+              transition"
+          >
+            <FaSignOutAlt />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

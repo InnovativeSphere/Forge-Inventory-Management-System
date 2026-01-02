@@ -7,15 +7,43 @@ import { fetchAllProducts } from "../redux/slices/productSlice";
 import { fetchAllUsers } from "../redux/slices/userSlice";
 import { fetchAllStockHistory } from "../redux/slices/stockHistorySlice";
 
-import Sidebar from "../components/Sidebar";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import {
+  FaHome,
+  FaBoxOpen,
+  FaUsers,
+  FaChartBar,
+  FaMoneyBill,
+  FaBookmark,
+  FaUser,
+  FaSignOutAlt,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
+
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { Spinner } from "../components/Spinner";
 
 import "../app/global.css";
 
-export default function Home() {
+const navItems = [
+  { label: "Dashboard", icon: FaHome, path: "/dashboard" },
+  { label: "Products", icon: FaBoxOpen, path: "/products" },
+  { label: "Suppliers", icon: FaUsers, path: "/suppliers" },
+  { label: "Stock History", icon: FaChartBar, path: "/stock-history" },
+  { label: "Sales", icon: FaMoneyBill, path: "/sales" },
+  { label: "Categories", icon: FaBookmark, path: "/categories" },
+  { label: "User Management", icon: FaUsers, path: "/userManagement" },
+  { label: "Register", icon: FaUser, path: "/signup" },
+  { label: "Profile", icon: FaUser, path: "/profile" },
+];
+
+export default function DashboardPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
   const { allUsers, loading: usersLoading } = useSelector(
     (state: RootState) => state.user
   );
@@ -26,179 +54,250 @@ export default function Home() {
     (state: RootState) => state.stockHistory
   );
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dashboardModal, setDashboardModal] = useState(false);
 
-  // Fetch data
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
     dispatch(fetchAllProducts());
     dispatch(fetchAllUsers());
     dispatch(fetchAllStockHistory());
   }, [dispatch]);
 
+  if (!mounted) return null;
+
   const lowStock = products?.filter((p) => p.quantity <= 5).length || 0;
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.replace("/login");
+  };
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-[var(--color-background)]">
       {/* Sidebar */}
-      <Sidebar className="fixed top-0 left-0 h-screen" />
-
-      {/* Main Content */}
-      <main className="flex-1 ml-64 flex flex-col">
-        {/* Hero Section */}
-        <section className="flex flex-col items-center justify-center text-center py-32 bg-[var(--color-background)] w-full">
-          <h1 className="text-5xl font-bold mb-6 text-[var(--color-foreground)]">
-            Welcome to Forge Inventory Management System
-          </h1>
-          <p className="text-xl text-[var(--color-muted)] max-w-3xl mb-8">
-             Manage your inventory with speed,
-            precision, and clarity.
-          </p>
-          <div className="flex gap-4">
-            <Button
-              variant="primary"
-              className="px-6 py-3"
-              onClick={() => setIsModalOpen(true)}
+      <aside
+        className={`
+          fixed top-0 left-0 z-50 h-screen w-64 bg-[var(--color-surface)]
+          text-[var(--color-foreground)] border-r border-[var(--color-border)]
+          shadow-lg flex flex-col transition-transform duration-300
+          ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0
+        `}
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-full bg-[var(--color-accent)] text-[var(--color-background)]
+              flex items-center justify-center font-black shadow-inner"
             >
-              Open Dashboard Preview
-            </Button>
-            <Button variant="secondary" className="px-6 py-3">
-              Learn More
-            </Button>
+              F
+            </div>
+            <span className="text-sm font-semibold">Forge IMS</span>
           </div>
-        </section>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+          >
+            <FaTimes />
+          </button>
+        </div>
 
-        {/* Features Section */}
-        <section className="py-24 bg-[var(--color-background)] flex flex-col items-center w-full">
-          <h2 className="text-4xl font-bold mb-12">Core Features</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl px-6">
-            {[
-              {
-                title: "Products & Stock",
-                description:
-                  "Track products, manage stock levels, and receive low-stock alerts in real-time.",
-              },
-              {
-                title: "Suppliers & Orders",
-                description:
-                  "Manage supplier details and monitor all orders seamlessly.",
-              },
-              {
-                title: "Analytics & Reports",
-                description:
-                  "Gain insights through dashboards, KPIs, and detailed reports.",
-              },
-            ].map((feature) => (
-              <Card
-                key={feature.title}
-                className="p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+        <nav className="flex-1 overflow-y-auto py-4">
+          <ul className="flex flex-col gap-1 px-3">
+            {navItems.map((item) => {
+              const isActive = router.pathname === item.path;
+              const Icon = item.icon;
+              return (
+                <li key={item.label}>
+                  <Link
+                    href={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium
+                      transition-all
+                      ${
+                        isActive
+                          ? "bg-[var(--color-accent)] text-[var(--color-background)]"
+                          : "text-[var(--color-muted)] hover:bg-[var(--color-accent)/20] hover:text-[var(--color-foreground)]"
+                      }
+                    `}
+                  >
+                    <Icon
+                      className={`text-lg ${
+                        isActive
+                          ? "text-[var(--color-background)]"
+                          : "text-[var(--color-accent)]"
+                      }`}
+                    />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="px-4 py-4 border-t border-[var(--color-border)]">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-4 py-2 rounded-lg
+              text-sm text-[var(--color-muted)]
+              hover:bg-[var(--color-accent)] hover:text-[var(--color-background)]
+              transition"
+          >
+            <FaSignOutAlt />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile toggle */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg
+          bg-[var(--color-accent)] text-[var(--color-background)] shadow-lg"
+      >
+        <FaBars />
+      </button>
+
+      {/* Main content */}
+      <main className="flex-1 flex flex-col md:ml-64">
+        <div className="max-w-7xl w-full mx-auto flex flex-col gap-20 py-12 px-6">
+          {/* Hero */}
+          <section className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[var(--color-foreground)]">
+              Forge Inventory Management System
+            </h1>
+            <p className="text-lg md:text-xl text-[var(--color-muted)] max-w-3xl mx-auto mb-8">
+              Manage your inventory with speed, precision, and clarity.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button
+                variant="primary"
+                className="px-6 py-3 w-full sm:w-auto"
+                onClick={() => setDashboardModal(true)}
               >
-                <h3 className="text-2xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-[var(--color-muted)] text-sm">
-                  {feature.description}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </section>
+                Open Dashboard Preview
+              </Button>
+              <Button
+                variant="secondary"
+                className="px-6 py-3 w-full sm:w-auto"
+              >
+                Learn More
+              </Button>
+            </div>
+          </section>
 
-        {/* Call to Action */}
-        <section className="py-24 bg-[var(--color-primary)] text-white flex flex-col items-center text-center w-full">
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to forge your workflow?
-          </h2>
-          <p className="mb-8 max-w-xl">
-            Experience a new level of control over your inventory management.
-          </p>
-          <Button className="px-8 py-4 font-bold rounded-lg" variant="primary">
-            Start Your Free Trial
-          </Button>
-        </section>
+          {/* Features */}
+          <section>
+            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center">
+              Core Features
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Products & Stock",
+                  description:
+                    "Track products, manage stock levels, and receive low-stock alerts in real-time.",
+                },
+                {
+                  title: "Suppliers & Orders",
+                  description:
+                    "Manage supplier details and monitor all orders seamlessly.",
+                },
+                {
+                  title: "Analytics & Reports",
+                  description:
+                    "Dashboards, KPIs, and reports designed for clarity and speed.",
+                },
+              ].map((f) => (
+                <Card
+                  key={f.title}
+                  className="p-6 rounded-lg shadow hover:shadow-lg"
+                >
+                  <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
+                  <p className="text-sm text-[var(--color-muted)]">
+                    {f.description}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </section>
 
-        {/* Footer */}
-        <footer className="py-12 bg-[var(--color-background)] text-[var(--color-muted)] text-center w-full">
-          © 2025 Forge IMS. All rights reserved.
-        </footer>
+          {/* Footer */}
+          <footer className="py-8 text-center text-sm text-[var(--color-muted)]">
+            © 2025 Forge IMS. All rights reserved.
+          </footer>
+        </div>
 
-        {/* Dashboard Side Modal */}
-        {isModalOpen && (
+        {/* Dashboard modal */}
+        {dashboardModal && (
           <>
             <div
-              className="fixed inset-0 bg-opacity-30 backdrop-blur-sm z-40"
-              onClick={() => setIsModalOpen(false)}
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+              onClick={() => setDashboardModal(false)}
             />
-            <aside className="fixed top-0 right-0 h-full w-80 bg-[var(--color-card)] rounded-l-2xl shadow-2xl p-4 z-50 overflow-y-auto transition-transform duration-500">
+            <aside className="fixed top-0 right-0 h-full w-80 bg-[var(--color-card)] z-50 p-4 overflow-y-auto">
               <h4 className="text-lg font-bold mb-4">Dashboard Preview</h4>
 
-              {/* Metrics */}
               <div className="flex flex-col gap-2 mb-4">
                 <Card className="flex justify-between p-2 text-sm">
-                  <span className="text-[var(--color-muted)]">Products</span>
-                  <span className="font-semibold">
-                    {productsLoading ? <Spinner size="sm" /> : products?.length || 0}
+                  <span>Products</span>
+                  <span>
+                    {productsLoading ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      products?.length || 0
+                    )}
                   </span>
                 </Card>
                 <Card className="flex justify-between p-2 text-sm">
-                  <span className="text-[var(--color-muted)]">Suppliers</span>
-                  <span className="font-semibold">
-                    {usersLoading ? <Spinner size="sm" /> : allUsers?.length || 0}
+                  <span>Users</span>
+                  <span>
+                    {usersLoading ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      allUsers?.length || 0
+                    )}
                   </span>
                 </Card>
                 <Card className="flex justify-between p-2 text-sm">
-                  <span className="text-[var(--color-muted)]">Low Stock</span>
-                  <span className="font-semibold text-red-500">
+                  <span>Low Stock</span>
+                  <span className="text-red-500 font-semibold">
                     {productsLoading ? <Spinner size="sm" /> : lowStock}
                   </span>
                 </Card>
               </div>
 
-              {/* Recent Stock Updates */}
-              <section className="mb-4">
-                <h5 className="font-semibold mb-2 text-[var(--color-foreground)] text-sm">
+              <section>
+                <h5 className="font-semibold mb-2 text-sm">
                   Recent Stock Updates
                 </h5>
                 {historyLoading ? (
                   <Spinner size="sm" />
-                ) : stockHistory.length > 0 ? (
+                ) : stockHistory.length ? (
                   stockHistory
                     .slice(-5)
                     .reverse()
                     .map((h) => (
-                      <Card
-                        key={h.id}
-                        className="flex justify-between p-2 text-sm mb-1"
-                      >
-                        <span>{h.product.name}</span>
-                        <span className="text-[var(--color-primary)]">
-                          {h.previousQuantity} → {h.newQuantity} ({h.action})
-                        </span>
+                      <Card key={h.id} className="p-2 text-sm mb-1">
+                        <div className="flex justify-between">
+                          <span>{h.product.name}</span>
+                          <span className="text-[var(--color-primary)]">
+                            {h.previousQuantity} → {h.newQuantity}
+                          </span>
+                        </div>
                       </Card>
                     ))
                 ) : (
-                  <p className="text-[var(--color-muted)] text-xs">
+                  <p className="text-xs text-[var(--color-muted)]">
                     No stock updates
                   </p>
                 )}
-              </section>
-
-              {/* Quick Actions */}
-              <section className="mt-4">
-                <h5 className="font-semibold mb-2 text-[var(--color-foreground)] text-sm">
-                  Actions
-                </h5>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { label: "Add Product", href: "/products" },
-                    { label: "Add User", href: "/signup" },
-                    { label: "View Sales", href: "/sales" },
-                    { label: "View Stock", href: "/stock-history" },
-                  ].map((action) => (
-                    <a key={action.label} href={action.href}>
-                      <Button variant="primary" className="w-full text-sm">
-                        {action.label}
-                      </Button>
-                    </a>
-                  ))}
-                </div>
               </section>
             </aside>
           </>
