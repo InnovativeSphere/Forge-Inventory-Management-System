@@ -14,9 +14,7 @@ interface CreateProductModalProps {
   onClose: () => void;
 }
 
-export default function CreateProductModal({
-  onClose,
-}: CreateProductModalProps) {
+export default function CreateProductModal({ onClose }: CreateProductModalProps) {
   const dispatch = useDispatch<AppDispatch>();
   const categories = useSelector(
     (state: RootState) => state.category.categories
@@ -102,197 +100,167 @@ export default function CreateProductModal({
     try {
       const result = await dispatch(createProduct({ payload }));
       if (createProduct.fulfilled.match(result)) {
-        setLoading(false);
         onClose();
       } else {
-        setLoading(false);
         setError((result.payload as string) || "Failed to create product");
       }
     } catch (err: any) {
-      setLoading(false);
       setError(err?.message || "Failed to create product");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--color-card)] w-full max-w-xl rounded-2xl p-8 shadow-2xl animate-scale-in relative space-y-6">
+      <div
+        className="
+          bg-[var(--color-card)]
+          w-full max-w-xl
+          max-h-[90vh]
+          rounded-2xl
+          shadow-2xl
+          animate-scale-in
+          relative
+          flex flex-col
+        "
+      >
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-2xl font-bold hover:text-red-500 transition"
+          className="absolute top-4 right-4 text-xl font-bold hover:text-red-500 transition"
         >
           ×
         </button>
 
         {/* Header */}
-        <h2 className="text-3xl font-bold text-[var(--color-foreground)]">
-          Create New Product
-        </h2>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div className="px-6 pt-6 pb-3 border-b border-[var(--color-border)]">
+          <h2 className="text-2xl font-bold text-[var(--color-foreground)]">
+            Create New Product
+          </h2>
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div>
 
-        {/* Form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Product Name */}
-          <input
-            name="name"
-            placeholder="Product Name (e.g., Wireless Mouse)"
-            value={formData.name}
-            onChange={handleChange}
-            className="input"
-          />
-
-          {/* SKU */}
-          <div className="flex gap-2">
+        {/* Scrollable Form */}
+        <div className="px-6 py-4 overflow-y-auto flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <input
-              name="sku"
-              placeholder="SKU (click 🔄 to generate or enter manually)"
-              value={formData.sku}
+              name="name"
+              placeholder="Product Name (e.g., Wireless Mouse)"
+              value={formData.name}
               onChange={handleChange}
-              className="input flex-1"
+              className="input"
             />
-            <Button
-              variant="secondary"
-              onClick={generateSKU}
-              className="text-sm px-3 py-1"
-            >
-              🔄
-            </Button>
-          </div>
 
-          {/* Category */}
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="input"
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat._id} value={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Supplier */}
-          <select
-            name="supplier"
-            value={formData.supplier}
-            onChange={handleChange}
-            className="input"
-          >
-            <option value="">Select Supplier</option>
-            {suppliers.map((sup) => (
-              <option key={sup.id} value={sup.id}>
-                {sup.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Quantity & Prices */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
-            {/* Quantity */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-[var(--color-foreground)] mb-1">
-                Quantity (units in stock)
-              </label>
+            <div className="flex gap-2">
               <input
+                name="sku"
+                placeholder="SKU"
+                value={formData.sku}
+                onChange={handleChange}
+                className="input flex-1"
+              />
+              <Button variant="secondary" onClick={generateSKU} className="px-3">
+                🔄
+              </Button>
+            </div>
+
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="input"
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="supplier"
+              value={formData.supplier}
+              onChange={handleChange}
+              className="input"
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map((sup) => (
+                <option key={sup.id} value={sup.id}>
+                  {sup.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="grid grid-cols-2 gap-4 md:col-span-2">
+              <input
+                type="number"
                 name="quantity"
-                placeholder="Enter quantity"
+                placeholder="Quantity"
                 value={formData.quantity}
                 onChange={handleChange}
-                className="input border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-                type="number"
+                className="input"
               />
-            </div>
-
-            {/* Minimum Stock */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-[var(--color-foreground)] mb-1">
-                Minimum Stock Alert
-              </label>
               <input
+                type="number"
                 name="minimumStock"
-                placeholder="e.g., 5"
+                placeholder="Min Stock Alert"
                 value={formData.minimumStock}
                 onChange={handleChange}
-                className="input border-[var(--color-accent)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent)]"
-                type="number"
+                className="input"
               />
-            </div>
-
-            {/* Cost Price */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-[var(--color-foreground)] mb-1">
-                Cost Price (₦)
-              </label>
               <input
+                type="number"
                 name="costPrice"
-                placeholder="Enter cost price"
+                placeholder="Cost Price (₦)"
                 value={formData.costPrice}
                 onChange={handleChange}
-                className="input border-green-400 focus:border-green-400 focus:ring-green-400"
-                type="number"
+                className="input"
               />
-            </div>
-
-            {/* Selling Price */}
-            <div className="flex flex-col">
-              <label className="text-sm font-medium text-[var(--color-foreground)] mb-1">
-                Selling Price (₦)
-              </label>
               <input
+                type="number"
                 name="sellingPrice"
-                placeholder="Enter selling price"
+                placeholder="Selling Price (₦)"
                 value={formData.sellingPrice}
                 onChange={handleChange}
-                className="input border-blue-400 focus:border-blue-400 focus:ring-blue-400"
-                type="number"
+                className="input"
               />
             </div>
-          </div>
 
-          {/* Barcode */}
-          <div className="flex gap-2 md:col-span-2">
+            <div className="flex gap-2 md:col-span-2">
+              <input
+                name="barcode"
+                placeholder="Barcode"
+                value={formData.barcode}
+                onChange={handleChange}
+                className="input flex-1"
+              />
+              <Button variant="secondary" onClick={generateBarcode} className="px-3">
+                🔄
+              </Button>
+            </div>
+
             <input
-              name="barcode"
-              placeholder="Barcode (click 🔄 to generate or enter manually)"
-              value={formData.barcode}
+              name="images"
+              placeholder="Image URLs (comma separated)"
+              value={formData.images}
               onChange={handleChange}
-              className="input flex-1"
-              type="text"
+              className="input md:col-span-2"
             />
-            <Button
-              variant="secondary"
-              onClick={generateBarcode}
-              className="text-sm px-3 py-1"
-            >
-              🔄
-            </Button>
+
+            <textarea
+              name="description"
+              placeholder="Description / notes about this product"
+              value={formData.description}
+              onChange={handleChange}
+              className="input md:col-span-2 min-h-[80px]"
+            />
           </div>
-
-          {/* Images */}
-          <input
-            name="images"
-            placeholder="Image URLs (comma separated)"
-            value={formData.images}
-            onChange={handleChange}
-            className="input md:col-span-2"
-          />
-
-          {/* Description */}
-          <textarea
-            name="description"
-            placeholder="Description / notes about this product"
-            value={formData.description}
-            onChange={handleChange}
-            className="input md:col-span-2 min-h-[100px]"
-          />
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mt-6 gap-4">
+        <div className="px-6 py-4 border-t border-[var(--color-border)] flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
