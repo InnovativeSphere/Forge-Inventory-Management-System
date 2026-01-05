@@ -8,13 +8,15 @@ import { fetchAllCategories } from "../redux/slices/categorySlice";
 import { fetchAllSuppliers } from "../redux/slices/supplierSlice";
 import { Button } from "../components/Button";
 import { Spinner } from "../components/Spinner";
-import "../app/global.css";
+import AuthGuard from "../components/AuthGuard";
 
 interface CreateProductModalProps {
   onClose: () => void;
 }
 
-export default function CreateProductModal({ onClose }: CreateProductModalProps) {
+export default function CreateProductModal({
+  onClose,
+}: CreateProductModalProps) {
   const dispatch = useDispatch<AppDispatch>();
   const categories = useSelector(
     (state: RootState) => state.category.categories
@@ -81,20 +83,14 @@ export default function CreateProductModal({ onClose }: CreateProductModalProps)
     setError(null);
 
     const payload = {
-      name: formData.name,
-      sku: formData.sku,
+      ...formData,
       category: formData.category || null,
       supplier: formData.supplier || null,
-      quantity: formData.quantity,
-      minimumStock: formData.minimumStock,
-      costPrice: formData.costPrice,
-      sellingPrice: formData.sellingPrice,
-      description: formData.description || "",
-      barcode: formData.barcode || "",
       images: formData.images
         ? formData.images.split(",").map((img) => img.trim())
         : [],
-      isActive: formData.isActive,
+      description: formData.description || "",
+      barcode: formData.barcode || "",
     };
 
     try {
@@ -112,69 +108,93 @@ export default function CreateProductModal({ onClose }: CreateProductModalProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div
-        className="
-          bg-[var(--color-card)]
-          w-full max-w-xl
-          max-h-[90vh]
-          rounded-2xl
-          shadow-2xl
-          animate-scale-in
-          relative
-          flex flex-col
-        "
-      >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-xl font-bold hover:text-red-500 transition"
-        >
-          ×
-        </button>
+    <AuthGuard>
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
-        {/* Header */}
-        <div className="px-6 pt-6 pb-3 border-b border-[var(--color-border)]">
-          <h2 className="text-2xl font-bold text-[var(--color-foreground)]">
-            Create New Product
-          </h2>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
+        {/* Modal */}
+        <div className="relative w-full max-w-xl sm:max-w-2xl bg-[var(--color-surface)] rounded-lg shadow-2xl border border-[var(--color-border)] flex flex-col max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="px-4 sm:px-5 py-3 border-b border-[var(--color-border)] flex items-center justify-between">
+            <div>
+              <h2 className="text-sm sm:text-base font-semibold text-[var(--color-foreground)]">
+                New Product
+              </h2>
+              <p className="text-[var(--color-muted)] text-xs sm:text-sm">
+                Add a product to your inventory
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors text-lg"
+            >
+              ×
+            </button>
+          </div>
 
-        {/* Scrollable Form */}
-        <div className="px-6 py-4 overflow-y-auto flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Scrollable Content */}
+          <div
+            className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 grid gap-4 text-xs sm:text-sm"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            }}
+          >
+            {error && (
+              <div className="text-red-500 text-xs border border-red-500/30 rounded p-2 col-span-full">
+                {error}
+              </div>
+            )}
+
+            {/* Name */}
             <input
               name="name"
-              placeholder="Product Name (e.g., Wireless Mouse)"
               value={formData.name}
               onChange={handleChange}
-              className="input"
+              placeholder="Product name"
+              className="input col-span-full"
             />
 
-            <div className="flex gap-2">
-              <input
-                name="sku"
-                placeholder="SKU"
-                value={formData.sku}
-                onChange={handleChange}
-                className="input flex-1"
-              />
-              <Button variant="secondary" onClick={generateSKU} className="px-3">
-                🔄
-              </Button>
+            {/* SKU & Barcode */}
+            <div className="grid grid-cols-2 gap-2 col-span-full">
+              <div className="flex gap-1">
+                <input
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleChange}
+                  placeholder="SKU"
+                  className="input flex-1"
+                />
+                <Button size="sm" variant="secondary" onClick={generateSKU}>
+                  Auto
+                </Button>
+              </div>
+
+              <div className="flex gap-1">
+                <input
+                  name="barcode"
+                  value={formData.barcode}
+                  onChange={handleChange}
+                  placeholder="Barcode"
+                  className="input flex-1"
+                />
+                <Button size="sm" variant="secondary" onClick={generateBarcode}>
+                  Auto
+                </Button>
+              </div>
             </div>
 
+            {/* Category & Supplier */}
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
               className="input"
             >
-              <option value="">Select Category</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
+              <option value="">Category</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -185,98 +205,111 @@ export default function CreateProductModal({ onClose }: CreateProductModalProps)
               onChange={handleChange}
               className="input"
             >
-              <option value="">Select Supplier</option>
-              {suppliers.map((sup) => (
-                <option key={sup.id} value={sup.id}>
-                  {sup.name}
+              <option value="">Supplier</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>
 
-            <div className="grid grid-cols-2 gap-4 md:col-span-2">
-              <input
-                type="number"
-                name="quantity"
-                placeholder="Quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                className="input"
-              />
-              <input
-                type="number"
-                name="minimumStock"
-                placeholder="Min Stock Alert"
-                value={formData.minimumStock}
-                onChange={handleChange}
-                className="input"
-              />
-              <input
-                type="number"
-                name="costPrice"
-                placeholder="Cost Price (₦)"
-                value={formData.costPrice}
-                onChange={handleChange}
-                className="input"
-              />
-              <input
-                type="number"
-                name="sellingPrice"
-                placeholder="Selling Price (₦)"
-                value={formData.sellingPrice}
-                onChange={handleChange}
-                className="input"
-              />
+            {/* Quantity & Prices with descriptor text */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 col-span-full">
+              <div className="flex flex-col">
+                <span className="text-[var(--color-muted)] text-xs mb-1">
+                  Quantity
+                </span>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="input"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[var(--color-muted)] text-xs mb-1">
+                  Min Stock Alert
+                </span>
+                <input
+                  type="number"
+                  name="minimumStock"
+                  value={formData.minimumStock}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="input"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[var(--color-muted)] text-xs mb-1">
+                  Cost Price (₦)
+                </span>
+                <input
+                  type="number"
+                  name="costPrice"
+                  value={formData.costPrice}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="input"
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-[var(--color-muted)] text-xs mb-1">
+                  Selling Price (₦)
+                </span>
+                <input
+                  type="number"
+                  name="sellingPrice"
+                  value={formData.sellingPrice}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="input"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-2 md:col-span-2">
-              <input
-                name="barcode"
-                placeholder="Barcode"
-                value={formData.barcode}
-                onChange={handleChange}
-                className="input flex-1"
-              />
-              <Button variant="secondary" onClick={generateBarcode} className="px-3">
-                🔄
-              </Button>
-            </div>
-
-            <input
-              name="images"
-              placeholder="Image URLs (comma separated)"
-              value={formData.images}
-              onChange={handleChange}
-              className="input md:col-span-2"
-            />
-
+            {/* Description */}
             <textarea
               name="description"
-              placeholder="Description / notes about this product"
               value={formData.description}
               onChange={handleChange}
-              className="input md:col-span-2 min-h-[80px]"
+              placeholder="Optional notes / description"
+              className="input col-span-full min-h-[70px]"
+            />
+
+            {/* Images */}
+            <input
+              name="images"
+              value={formData.images}
+              onChange={handleChange}
+              placeholder="Image URLs (comma separated)"
+              className="input col-span-full"
             />
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-[var(--color-border)] flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={formData.isActive}
-              onChange={() =>
-                setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
-              }
-            />
-            Active Product
-          </label>
+          {/* Footer */}
+          <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={() =>
+                  setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+                }
+              />
+              Active
+            </label>
 
-          <Button onClick={handleSubmit} disabled={loading} variant="primary">
-            {loading ? <Spinner /> : "Create Product"}
-          </Button>
+            <Button size="sm" onClick={handleSubmit} disabled={loading}>
+              {loading ? <Spinner /> : "Create Product"}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

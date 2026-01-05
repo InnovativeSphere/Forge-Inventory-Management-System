@@ -6,6 +6,7 @@ import {
   fetchCurrentUser,
   updateProfile,
   deleteUserByAdmin,
+  logoutUser,
 } from "../redux/slices/userSlice";
 import type { RootState, AppDispatch } from "../redux/store/store";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
   FaImage,
   FaKey,
 } from "react-icons/fa";
+import AuthGuard from "../components/AuthGuard";
 import "../app/global.css";
 
 type ModalState = {
@@ -53,10 +55,7 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!user && token) {
-      dispatch(fetchCurrentUser({ token }));
-    }
-
+    if (!user && token) dispatch(fetchCurrentUser({ token }));
     if (user) {
       setFormData({
         username: user.username || "",
@@ -70,268 +69,231 @@ export default function ProfilePage() {
     }
   }, [user, token, dispatch]);
 
+  useEffect(() => {
+    if (!token) router.replace("/login");
+  }, [token, router]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
     const result = await dispatch(updateProfile({ updateData: formData }));
 
-    if (updateProfile.fulfilled.match(result)) {
-      setModal({
-        open: true,
-        type: "success",
-        message: "Profile updated successfully.",
-      });
-    } else {
-      setModal({
-        open: true,
-        type: "error",
-        message: error || "Failed to update profile.",
-      });
-    }
+    setModal({
+      open: true,
+      type: updateProfile.fulfilled.match(result) ? "success" : "error",
+      message: updateProfile.fulfilled.match(result)
+        ? "Profile updated successfully."
+        : error || "Failed to update profile.",
+    });
   };
 
   const handleDeleteAccount = async () => {
     if (!user?._id) return;
-
     const result = await dispatch(deleteUserByAdmin(user._id));
 
-    if (deleteUserByAdmin.fulfilled.match(result)) {
-      setModal({
-        open: true,
-        type: "success",
-        message: "Account deleted successfully.",
-      });
+    setModal({
+      open: true,
+      type: deleteUserByAdmin.fulfilled.match(result) ? "success" : "error",
+      message: deleteUserByAdmin.fulfilled.match(result)
+        ? "Account deleted successfully."
+        : "Failed to delete account.",
+    });
 
-      setTimeout(() => {
-        router.replace("/login");
-      }, 1500);
-    } else {
+    if (deleteUserByAdmin.fulfilled.match(result)) {
+      setTimeout(() => router.replace("/login"), 1500);
+    }
+  };
+
+  const handleLogout = async () => {
+    const result = await dispatch(logoutUser());
+    if (logoutUser.fulfilled.match(result)) router.replace("/login");
+    else {
       setModal({
         open: true,
         type: "error",
-        message: "Failed to delete account.",
+        message: "Logout failed",
       });
     }
   };
 
-  const firstLetterAvatar = user?.name?.charAt(0)?.toUpperCase() ?? "?";
+  const avatarLetter = user?.name?.charAt(0)?.toUpperCase() ?? "?";
 
   return (
-    <main className="min-h-screen bg-[var(--color-background)] p-6">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Profile Header */}
-        <Card className="flex items-center gap-6 p-6 rounded-3xl shadow-lg">
-          {formData.profilePicture ? (
-            <img
-              src={formData.profilePicture}
-              alt="Profile"
-              className="w-28 h-28 rounded-full border-2 border-[var(--color-accent)] object-cover"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full border-2 border-[var(--color-accent)] flex items-center justify-center text-3xl font-bold text-[var(--color-accent)]">
-              {firstLetterAvatar}
-            </div>
-          )}
-
-          <div>
-            <h2 className="text-2xl font-bold text-[var(--color-foreground)]">
-              {user?.name}
-            </h2>
-            <p className="text-[var(--color-muted)]">{user?.role ?? "Staff"}</p>
-            <p className="text-sm text-[var(--color-muted)] mt-1">
-              Theme: {user?.theme}
-            </p>
-          </div>
-        </Card>
-
-        {/* Profile Form */}
-        <Card className="p-8 rounded-3xl shadow-lg">
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {/* Username */}
-            <div className="flex flex-col relative">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-              <input
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Username"
-                className="input pl-11 py-4 rounded-xl"
+    <AuthGuard>
+      <main className="min-h-screen bg-[var(--color-background)] px-4 sm:px-6 py-6">
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Header */}
+          <Card className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 p-4 sm:p-6 rounded-2xl hover:shadow-md transition">
+            {formData.profilePicture ? (
+              <img
+                src={formData.profilePicture}
+                alt="Profile"
+                className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-[var(--color-accent)] object-cover"
               />
+            ) : (
+              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-2 border-[var(--color-accent)] flex items-center justify-center text-2xl sm:text-3xl font-bold text-[var(--color-accent)]">
+                {avatarLetter}
+              </div>
+            )}
+
+            <div className="text-center sm:text-left">
+              <h2 className="text-lg sm:text-2xl font-bold">
+                {user?.name}
+              </h2>
+              <p className="text-sm text-[var(--color-muted)] capitalize">
+                {user?.role ?? "Staff"}
+              </p>
+              <p className="text-xs text-[var(--color-muted)] mt-1">
+                Theme: {user?.theme}
+              </p>
             </div>
+          </Card>
 
-            {/* Full Name */}
-            <div className="flex flex-col relative">
-              <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="input pl-11 py-4 rounded-xl"
-              />
-            </div>
-
-            {/* Email */}
-            <div className="flex flex-col relative">
-              <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="input pl-11 py-4 rounded-xl"
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="flex flex-col relative">
-              <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-              <input
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Phone Number"
-                className="input pl-11 py-4 rounded-xl"
-              />
-            </div>
-
-            {/* Profile Picture */}
-            <div className="flex flex-col relative">
-              <FaImage className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-              <input
-                name="profilePicture"
-                value={formData.profilePicture}
-                onChange={handleChange}
-                placeholder="Profile Picture URL"
-                className="input pl-11 py-4 rounded-xl"
-              />
-            </div>
-
-            {/* Theme */}
-            <div className="flex flex-col">
-              <label className="text-[var(--color-muted)] mb-1">Theme</label>
-              <select
-                name="theme"
-                value={formData.theme}
-                onChange={handleChange}
-                className="input py-4 rounded-xl"
-              >
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
-
-            {/* Password */}
-            <div className="col-span-1 md:col-span-2">
-              <button
-                type="button"
-                onClick={() => setShowPasswordCard((v) => !v)}
-                className="w-full px-4 py-4 rounded-xl bg-[var(--color-accent)] text-white font-semibold hover:brightness-110 transition"
-              >
-                {showPasswordCard ? "Hide Security Settings" : "Change Password"}
-              </button>
-
-              {showPasswordCard && (
-                <div className="relative mt-4">
-                  <FaKey className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
+          {/* Profile Form */}
+          <Card className="p-4 sm:p-8 rounded-2xl">
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" onSubmit={handleSubmit}>
+              {[
+                { name: "username", icon: FaUser, placeholder: "Username" },
+                { name: "name", icon: FaUser, placeholder: "Full Name" },
+                { name: "email", icon: FaEnvelope, placeholder: "Email", type: "email" },
+                { name: "phone", icon: FaPhone, placeholder: "Phone Number" },
+                { name: "profilePicture", icon: FaImage, placeholder: "Profile Picture URL" },
+              ].map(({ name, icon: Icon, placeholder, type }) => (
+                <div key={name} className="relative">
+                  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)]" />
                   <input
-                    name="password"
-                    type="password"
-                    value={formData.password}
+                    name={name}
+                    type={type ?? "text"}
+                    value={(formData as any)[name]}
                     onChange={handleChange}
-                    minLength={6}
-                    placeholder="New Password"
-                    className="input pl-11 py-4 rounded-xl"
+                    placeholder={placeholder}
+                    className="input pl-9 py-3 sm:py-4 rounded-xl text-sm"
                   />
                 </div>
-              )}
-            </div>
+              ))}
 
-            {/* Submit */}
-            <div className="col-span-1 md:col-span-2">
-              <Button
-                type="submit"
-                size="md"
-                variant="primary"
-                disabled={loading}
-                className="w-full py-4 rounded-xl"
-              >
-                {loading ? <Spinner size="sm" /> : "Update Profile"}
-              </Button>
-            </div>
-          </form>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="bg-[var(--color-card)] border border-red-500/30 p-6 rounded-2xl">
-          <h3 className="text-lg font-bold text-red-500 mb-3">Danger Zone</h3>
-          <Button
-            onClick={() =>
-              setModal({
-                open: true,
-                type: "confirm-delete",
-                message:
-                  "This will permanently delete your account. This action cannot be undone.",
-              })
-            }
-            variant="secondary"
-            className="text-red-500 hover:bg-red-100 w-full"
-          >
-            Delete Account
-          </Button>
-        </Card>
-      </div>
-
-      {/* Modal */}
-      {modal.open && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[var(--color-card)] p-6 rounded-xl max-w-sm w-full text-center">
-            <p className="text-[var(--color-foreground)] mb-4">
-              {modal.message}
-            </p>
-
-            {modal.type === "confirm-delete" ? (
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleDeleteAccount}
-                  variant="primary"
-                  className="flex-1 py-3 rounded-xl"
+              <div>
+                <label className="text-xs text-[var(--color-muted)] mb-1 block">
+                  Theme
+                </label>
+                <select
+                  name="theme"
+                  value={formData.theme}
+                  onChange={handleChange}
+                  className="input py-3 sm:py-4 rounded-xl text-sm"
                 >
-                  Delete
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+
+              {/* Password */}
+              <div className="md:col-span-2">
+                <Button
+                  type="button"
+                  onClick={() => setShowPasswordCard((v) => !v)}
+                  className="w-full py-3 rounded-xl"
+                >
+                  {showPasswordCard ? "Hide Security Settings" : "Change Password"}
                 </Button>
+
+                {showPasswordCard && (
+                  <div className="relative mt-3">
+                    <FaKey className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)]" />
+                    <input
+                      name="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="New Password"
+                      className="input pl-9 py-3 rounded-xl text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
                 <Button
-                  onClick={() => setModal({ ...modal, open: false })}
-                  variant="secondary"
-                  className="flex-1 py-3 rounded-xl"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl"
                 >
-                  Cancel
+                  {loading ? <Spinner size="sm" /> : "Update Profile"}
                 </Button>
               </div>
-            ) : (
-              <Button
-                onClick={() => setModal({ ...modal, open: false })}
-                variant="primary"
-                className="w-full py-3 rounded-xl"
-              >
-                Close
-              </Button>
-            )}
-          </div>
+            </form>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border border-red-500/30 p-4 rounded-xl">
+            <h3 className="text-sm font-semibold text-red-500 mb-3">
+              Danger Zone
+            </h3>
+            <Button
+              variant="secondary"
+              className="w-full text-red-500 hover:bg-red-500 hover:text-white"
+              onClick={() =>
+                setModal({
+                  open: true,
+                  type: "confirm-delete",
+                  message:
+                    "This will permanently delete your account. This action cannot be undone.",
+                })
+              }
+            >
+              Delete Account
+            </Button>
+          </Card>
+
+          {/* Logout */}
+          <Card className="p-4 rounded-xl">
+            <Button
+              onClick={handleLogout}
+              className="w-full bg-red-500 hover:bg-red-600"
+            >
+              Logout
+            </Button>
+          </Card>
         </div>
-      )}
-    </main>
+
+        {/* Modal */}
+        {modal.open && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-[var(--color-card)] p-6 rounded-xl max-w-sm w-full text-center space-y-4">
+              <p className="text-sm">{modal.message}</p>
+              {modal.type === "confirm-delete" ? (
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleDeleteAccount}
+                    className="flex-1 bg-red-500"
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setModal({ ...modal, open: false })}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setModal({ ...modal, open: false })}
+                  className="w-full"
+                >
+                  Close
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+    </AuthGuard>
   );
 }

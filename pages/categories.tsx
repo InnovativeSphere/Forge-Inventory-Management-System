@@ -13,9 +13,10 @@ import {
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { Spinner } from "../components/Spinner";
-
 import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
-import '../app/global.css'
+import AuthGuard from "../components/AuthGuard";
+import Sidebar from "../components/Sidebar";
+import "../app/global.css";
 
 type FormState = {
   name: string;
@@ -29,7 +30,7 @@ const emptyForm: FormState = {
   isActive: true,
 };
 
-export default function CategoryManager() {
+function CategoryManagerContent() {
   const dispatch = useDispatch<AppDispatch>();
   const { categories, loading, error } = useSelector(
     (state: RootState) => state.category
@@ -46,7 +47,6 @@ export default function CategoryManager() {
 
   const [createForm, setCreateForm] = useState<FormState>(emptyForm);
   const [editForm, setEditForm] = useState<FormState>(emptyForm);
-
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -58,11 +58,8 @@ export default function CategoryManager() {
   const filteredCategories = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return normalizedCategories;
-
     return normalizedCategories.filter((c) =>
-      [c.name, c.description].some((v) =>
-        v?.toLowerCase().includes(q)
-      )
+      [c.name, c.description].some((v) => v?.toLowerCase().includes(q))
     );
   }, [search, normalizedCategories]);
 
@@ -86,7 +83,10 @@ export default function CategoryManager() {
     }));
   };
 
+  const isCreateFormEmpty = !createForm.name && !createForm.description;
+
   const handleCreate = async () => {
+    if (isCreateFormEmpty) return;
     await dispatch(createCategory({ payload: createForm }) as any);
     setCreateForm(emptyForm);
     dispatch(fetchAllCategories({}) as any);
@@ -108,186 +108,209 @@ export default function CategoryManager() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6 fade-in">
-      <h1 className="text-2xl font-semibold">Category Management</h1>
+    <div className="flex justify-center transition-all duration-300 w-full">
+      <div className="w-full max-w-4xl p-4 sm:p-6 space-y-6">
+        <h1 className="text-2xl font-semibold text-center">
+          Category Management
+        </h1>
 
-      {/* CREATE */}
-      <Card className="p-5 space-y-4">
-        <h2 className="text-base font-medium">Add Category</h2>
-
-        {error && (
-          <p className="text-sm text-[var(--color-accent)]">{error}</p>
-        )}
-
-        <input
-          name="name"
-          value={createForm.name}
-          onChange={handleCreateChange}
-          placeholder="Category name"
-          className="input w-full"
-        />
-
-        <textarea
-          name="description"
-          value={createForm.description}
-          onChange={handleCreateChange}
-          placeholder="Description"
-          className="input w-full min-h-[80px]"
-        />
-
-        <label className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
+        {/* CREATE FORM */}
+        <Card className="p-5 space-y-4">
+          <h2 className="text-base font-medium">Add Category</h2>
+          {error && (
+            <p className="text-sm text-[var(--color-accent)]">{error}</p>
+          )}
           <input
-            type="checkbox"
-            name="isActive"
-            checked={createForm.isActive}
+            name="name"
+            value={createForm.name}
             onChange={handleCreateChange}
+            placeholder="Category name"
+            className="input w-full"
           />
-          Active
-        </label>
-
-        <div className="pt-2">
-          <Button size="sm" onClick={handleCreate} disabled={loading}>
-            {loading ? <Spinner size="sm" /> : "Create Category"}
-          </Button>
-        </div>
-      </Card>
-
-      {/* SEARCH */}
-      <Card className="p-4">
-        <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search categories..."
-            className="input w-full pl-8"
+          <textarea
+            name="description"
+            value={createForm.description}
+            onChange={handleCreateChange}
+            placeholder="Description"
+            className="input w-full min-h-[80px]"
           />
-        </div>
-      </Card>
-
-      {/* LIST */}
-      <div className="space-y-3">
-        {loading && (
-          <div className="flex justify-center py-6">
-            <Spinner />
-          </div>
-        )}
-
-        {!loading &&
-          filteredCategories.map((cat) => (
-            <Card
-              key={cat.id}
-              className="p-4 flex justify-between items-start interactive"
+          <label className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
+            <input
+              type="checkbox"
+              name="isActive"
+              checked={createForm.isActive}
+              onChange={handleCreateChange}
+            />
+            Active
+          </label>
+          <div className="pt-2 flex justify-end">
+            <Button
+              size="sm"
+              onClick={handleCreate}
+              disabled={loading || isCreateFormEmpty}
             >
-              <div className="space-y-1">
-                <p className="font-medium">{cat.name}</p>
+              {loading ? <Spinner size="sm" /> : "Create Category"}
+            </Button>
+          </div>
+        </Card>
 
-                {cat.description && (
-                  <p className="text-sm text-[var(--color-muted)]">
-                    {cat.description}
-                  </p>
-                )}
+        {/* SEARCH */}
+        <Card className="p-4">
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search categories..."
+              className="input w-full pl-8"
+            />
+          </div>
+        </Card>
 
-                <span
-                  className={`inline-block text-xs px-2 py-0.5 rounded-full border ${
-                    cat.isActive
-                      ? "border-[var(--color-accent)] text-[var(--color-accent)]"
-                      : "border-[var(--color-border)] text-[var(--color-muted)]"
-                  }`}
+        {/* CATEGORY LIST */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {loading && (
+            <div className="flex justify-center py-6 col-span-full">
+              <Spinner />
+            </div>
+          )}
+          {!loading &&
+            filteredCategories.map((cat) => (
+              <Card
+                key={cat.id}
+                className="p-4 flex flex-col justify-between interactive"
+              >
+                <div className="space-y-1">
+                  <p className="font-medium">{cat.name}</p>
+                  {cat.description && (
+                    <p className="text-sm text-[var(--color-muted)]">
+                      {cat.description}
+                    </p>
+                  )}
+                  <span
+                    className={`inline-block text-xs px-2 py-0.5 rounded-full border ${
+                      cat.isActive
+                        ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                        : "border-[var(--color-border)] text-[var(--color-muted)]"
+                    }`}
+                  >
+                    {cat.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+                <div className="flex gap-2 mt-2 justify-end flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setEditId(cat.id);
+                      setEditForm({
+                        name: cat.name,
+                        description: cat.description ?? "",
+                        isActive: cat.isActive,
+                      });
+                    }}
+                  >
+                    <FaEdit className="inline mr-1 text-xs" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-red-500 text-white hover:bg-red-600"
+                    onClick={() => setDeleteId(cat.id)}
+                  >
+                    <FaTrash className="inline mr-1 text-xs" />
+                    Delete
+                  </Button>
+                </div>
+              </Card>
+            ))}
+        </div>
+
+        {/* EDIT MODAL */}
+        {editId && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 sm:p-6 overflow-auto">
+            <Card className="w-full max-w-sm sm:max-w-sm md:max-w-md p-5 space-y-4 flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <h2 className="text-base font-medium">Edit Category</h2>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setEditId(null)}
                 >
-                  {cat.isActive ? "Active" : "Inactive"}
-                </span>
+                  ✕
+                </Button>
               </div>
-
-              <div className="flex gap-2">
+              <input
+                name="name"
+                value={editForm.name}
+                onChange={handleEditChange}
+                className="input w-full"
+              />
+              <textarea
+                name="description"
+                value={editForm.description}
+                onChange={handleEditChange}
+                className="input w-full min-h-[80px]"
+              />
+              <label className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
+                <input
+                  type="checkbox"
+                  name="isActive"
+                  checked={editForm.isActive}
+                  onChange={handleEditChange}
+                />
+                Active
+              </label>
+              <div className="flex justify-end gap-2 pt-2 flex-wrap">
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={() => {
-                    setEditId(cat.id);
-                    setEditForm({
-                      name: cat.name,
-                      description: cat.description ?? "",
-                      isActive: cat.isActive,
-                    });
-                  }}
+                  onClick={() => setEditId(null)}
                 >
-                  <FaEdit className="inline mr-1 text-xs" />
-                  Edit
+                  Cancel
                 </Button>
+                <Button size="sm" onClick={handleUpdate}>
+                  Save
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
 
+        {/* DELETE MODAL */}
+        {deleteId && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 sm:p-6 overflow-auto">
+            <Card className="w-full max-w-sm sm:max-w-sm md:max-w-md p-5 space-y-4 flex-shrink-0">
+              <p className="font-medium">Delete this category?</p>
+              <div className="flex justify-end gap-2 flex-wrap">
                 <Button
                   size="sm"
-                  variant="primary"
-                  onClick={() => setDeleteId(cat.id)}
+                  variant="ghost"
+                  onClick={() => setDeleteId(null)}
                 >
-                  <FaTrash className="inline mr-1 text-xs" />
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-red-500 text-white hover:bg-red-600"
+                  size="sm"
+                  variant="primary"
+                  onClick={handleDelete}
+                >
                   Delete
                 </Button>
               </div>
             </Card>
-          ))}
+          </div>
+        )}
       </div>
-
-      {/* EDIT MODAL */}
-      {editId && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md p-5 space-y-4 scale-in">
-            <h2 className="text-base font-medium">Edit Category</h2>
-
-            <input
-              name="name"
-              value={editForm.name}
-              onChange={handleEditChange}
-              className="input w-full"
-            />
-
-            <textarea
-              name="description"
-              value={editForm.description}
-              onChange={handleEditChange}
-              className="input w-full min-h-[80px]"
-            />
-
-            <label className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
-              <input
-                type="checkbox"
-                name="isActive"
-                checked={editForm.isActive}
-                onChange={handleEditChange}
-              />
-              Active
-            </label>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button size="sm" variant="ghost" onClick={() => setEditId(null)}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleUpdate}>
-                Save
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* DELETE MODAL */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <Card className="p-5 space-y-4 scale-in">
-            <p className="font-medium">Delete this category?</p>
-
-            <div className="flex justify-end gap-2">
-              <Button size="sm" variant="ghost" onClick={() => setDeleteId(null)}>
-                Cancel
-              </Button>
-              <Button size="sm" variant="primary" onClick={handleDelete}>
-                Delete
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
+  );
+}
+
+export default function CategoryManager() {
+  return (
+    <AuthGuard>
+        <CategoryManagerContent />
+    </AuthGuard>
   );
 }

@@ -22,66 +22,95 @@ export default function ViewProductModal({ product, onClose }: Props) {
     suppliers.find((sup) => sup.id === product.supplier)?.name || "N/A";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white w-full max-w-3xl rounded-2xl p-6 shadow-xl relative overflow-y-auto max-h-[90vh]">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-2xl font-bold text-gray-700 hover:text-red-500"
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-2xl bg-[var(--color-surface)] rounded-lg shadow-2xl border border-[var(--color-border)] flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="px-4 sm:px-5 py-3 border-b border-[var(--color-border)] flex items-center justify-between">
+          <h2 className="text-sm sm:text-base font-semibold text-[var(--color-foreground)]">
+            {product.name}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors text-lg"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div
+          className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 grid gap-3 text-xs sm:text-sm"
+          style={{
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          }}
         >
-          ×
-        </button>
-
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">{product.name}</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <InfoField label="SKU" value={product.sku} />
           <InfoField label="Category" value={categoryName} />
           <InfoField label="Supplier" value={supplierName} />
           <InfoField label="Quantity" value={product.quantity} />
           <InfoField label="Minimum Stock" value={product.minimumStock} />
-          <InfoField label="Cost Price" value={`₦${product.costPrice.toFixed(2)}`} />
-          <InfoField label="Selling Price" value={`₦${product.sellingPrice.toFixed(2)}`} />
-          <InfoField label="Active Status" value={product.isActive ? "Active" : "Inactive"} />
+          <InfoField
+            label="Cost Price"
+            value={`₦${product.costPrice.toFixed(2)}`}
+          />
+          <InfoField
+            label="Selling Price"
+            value={`₦${product.sellingPrice.toFixed(2)}`}
+          />
+          <InfoField
+            label="Active Status"
+            value={product.isActive ? "Active" : "Inactive"}
+          />
 
           {/* Description */}
-          <div className="md:col-span-2 mt-2">
-            <p className="text-gray-500 font-medium mb-1">Description</p>
-            <p className="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[60px]">
+          <div className="col-span-full">
+            <span className="text-[var(--color-muted)] text-xs mb-1 block">
+              Description
+            </span>
+            <p className="bg-[var(--color-card)] p-3 rounded border border-[var(--color-border)] min-h-[60px] text-[var(--color-muted)]">
               {product.description || "No description"}
             </p>
           </div>
 
           {/* Barcode */}
-          <div className="md:col-span-2 mt-2">
-            <p className="text-gray-500 font-medium mb-1">Barcode</p>
-            <p className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+          <div className="col-span-full">
+            <span className="text-[var(--color-muted)] text-xs mb-1 block">
+              Barcode
+            </span>
+            <p className="bg-[var(--color-card)] p-3 rounded border border-[var(--color-border)] text-[var(--color-muted)]">
               {product.barcode || "N/A"}
             </p>
           </div>
+
+          {/* Images */}
+          {product.images && product.images.length > 0 && (
+            <div className="col-span-full">
+              <span className="text-[var(--color-muted)] text-xs mb-1 block">
+                Images
+              </span>
+              <div className="flex gap-3 overflow-x-auto py-1">
+                {product.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`${product.name}-${idx}`}
+                    className="w-36 h-24 object-cover rounded-lg border border-[var(--color-border)] flex-shrink-0 transition-shadow duration-200 hover:shadow-lg"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Images Carousel */}
-        {product.images && product.images.length > 0 && (
-          <div className="mt-5">
-            <p className="text-gray-500 font-medium mb-2">Images</p>
-            <div className="flex gap-3 overflow-x-auto py-1">
-              {product.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`${product.name}-${idx}`}
-                  className="w-40 h-28 object-cover rounded-lg border border-gray-300 flex-shrink-0 transition-shadow duration-200 hover:shadow-lg"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Close Button */}
-        <div className="mt-6 flex justify-end">
+        {/* Footer */}
+        <div className="px-4 sm:px-5 py-3 border-t border-[var(--color-border)] flex justify-end">
           <button
             onClick={onClose}
-            className="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-700"
+            className="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--color-accent-hover)] transition"
           >
             Close
           </button>
@@ -91,11 +120,19 @@ export default function ViewProductModal({ product, onClose }: Props) {
   );
 }
 
-function InfoField({ label, value }: { label: string; value: string | number }) {
+function InfoField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
   return (
     <div>
-      <p className="text-gray-500 font-medium mb-1">{label}</p>
-      <p className="font-semibold text-gray-900">{value}</p>
+      <span className="text-[var(--color-muted)] text-xs mb-1 block">
+        {label}
+      </span>
+      <p className="font-semibold text-[var(--color-foreground)]">{value}</p>
     </div>
   );
 }

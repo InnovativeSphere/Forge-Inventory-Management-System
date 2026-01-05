@@ -282,3 +282,26 @@ export const verifyToken = (req, res, next) => {
     res.status(401).json({ message: "Invalid token" });
   }
 };
+
+/* =======================
+   LOGOUT
+======================= */
+
+export const logoutUser = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    // Optional: track logout time if field exists (harmless if ignored)
+    await User.findByIdAndUpdate(req.user.id, {
+      lastLogout: new Date(),
+    });
+
+    // JWT is stateless — client must delete token
+    res.json({ message: "Logout successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error during logout" });
+  }
+};

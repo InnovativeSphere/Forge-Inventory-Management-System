@@ -50,7 +50,10 @@ export default function EditSupplier({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 fade-in p-4">
-      <div className="card w-full max-w-md p-6 rounded-xl space-y-4 relative scale-in">
+      <div
+        className="card w-80 max-w-md sm:max-w-sm p-5 sm:p-4 rounded-xl space-y-4 relative scale-in
+                      mx-2 sm:mx-4"
+      >
         {/* Close */}
         <button
           onClick={onClose}
@@ -62,24 +65,56 @@ export default function EditSupplier({
 
         {/* Header */}
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">Edit Supplier</h2>
-          <p className="text-sm text-[var(--color-muted)]">Update supplier information</p>
+          <h2 className="text-lg sm:text-base font-semibold tracking-tight">
+            Edit Supplier
+          </h2>
+          <p className="text-xs sm:text-[10px] text-[var(--color-muted)]">
+            Update supplier information
+          </p>
         </div>
 
         {/* Form */}
         <div className="space-y-2">
-          <Input label="Name" name="name" value={form.name} onChange={handleChange} required />
-          <Input label="Company" name="company" value={form.company} onChange={handleChange} />
-          <Input label="Email" name="email" value={form.email} onChange={handleChange} type="email" />
-          <Input label="Phone" name="phone" value={form.phone} onChange={handleChange} />
-          <Textarea label="Address" name="address" value={form.address} onChange={handleChange} rows={2} />
+          <Input
+            label="Name"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Company"
+            name="company"
+            value={form.company}
+            onChange={handleChange}
+          />
+          <Input
+            label="Email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            type="email"
+          />
+          <Input
+            label="Phone"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+          />
+          <Textarea
+            label="Address"
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            rows={2}
+          />
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border)]">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-md text-sm border border-[var(--color-border)] bg-[var(--color-surface)] interactive"
+            className="px-3 py-1.5 rounded-md text-sm border border-[var(--color-border)] bg-[var(--color-surface)] interactive hover:bg-[var(--color-surface-hover)] transition"
             disabled={isLoading}
           >
             Cancel
@@ -87,7 +122,7 @@ export default function EditSupplier({
 
           <button
             onClick={handleSubmit}
-            className="px-4 py-1.5 rounded-md text-sm text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] interactive"
+            className="px-3 py-1.5 rounded-md text-sm text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] interactive transition"
             disabled={isLoading}
           >
             {isLoading ? "Saving..." : "Save"}
@@ -106,10 +141,12 @@ function Input({
 }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-[var(--color-muted)]">{label}</label>
+      <label className="text-[10px] sm:text-xs font-medium text-[var(--color-muted)]">
+        {label}
+      </label>
       <input
         {...props}
-        className="w-full px-2 py-1.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+        className="w-full px-2 py-1.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-sm sm:text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition"
       />
     </div>
   );
@@ -122,11 +159,13 @@ function Textarea({
 }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-[var(--color-muted)]">{label}</label>
+      <label className="text-[10px] sm:text-xs font-medium text-[var(--color-muted)]">
+        {label}
+      </label>
       <textarea
         {...props}
         rows={rows}
-        className="w-full px-2 py-1.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+        className="w-full px-2 py-1.5 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] text-sm sm:text-xs resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition"
       />
     </div>
   );

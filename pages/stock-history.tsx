@@ -9,6 +9,7 @@ import { StockHistory } from "../redux/apiUtils/stockHistoryApi";
 
 import { Card } from "../components/Card";
 import { Spinner } from "../components/Spinner";
+import AuthGuard from "../components/AuthGuard";
 
 import "../app/global.css";
 
@@ -94,77 +95,81 @@ export default function StockHistoryPage() {
     .size;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8 fade-in">
-      {/* Header */}
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-[var(--color-foreground)]">
-          Stock History
-        </h1>
-        <p className="text-sm text-[var(--color-muted)]">
-          Complete log of all inventory changes
-        </p>
-      </header>
+    <AuthGuard>
+      <div className="max-w-6xl p-4  mx-auto px-6 py-8 space-y-8 fade-in">
+        {/* Header */}
+        <header className="space-y-2">
+          <h1 className="text-3xl font-bold text-[var(--color-foreground)]">
+            Stock History
+          </h1>
+          <p className="text-sm text-[var(--color-muted)]">
+            Complete log of all inventory changes
+          </p>
+        </header>
 
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
-        <input
-          type="text"
-          placeholder="Search by product name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="
-            w-full sm:max-w-sm
-            px-3 py-2 rounded-lg
-            bg-[var(--color-surface)]
-            border border-[var(--color-border)]
-            focus:outline-none
-            focus:border-[var(--color-accent)]
-          "
-        />
-      </div>
-
-      {/* KPI Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="p-5 rounded-xl">
-          <p className="text-sm text-[var(--color-muted)]">Total Changes</p>
-          <p className="text-3xl font-bold">{totalChanges}</p>
-        </Card>
-
-        <Card className="p-5 rounded-xl">
-          <p className="text-sm text-[var(--color-muted)]">Products Updated</p>
-          <p className="text-3xl font-bold">{uniqueProducts}</p>
-        </Card>
-      </div>
-
-      {/* States */}
-      {loading && (
-        <div className="flex justify-center py-12">
-          <Spinner />
-        </div>
-      )}
-
-      {error && (
-        <Card className="p-4 border border-red-500/30 text-red-500">
-          {error}
-        </Card>
-      )}
-
-      {!loading && filteredHistory.length === 0 && (
-        <p className="text-center text-[var(--color-muted)]">
-          No stock history found.
-        </p>
-      )}
-
-      {/* History List */}
-      <div className="space-y-4">
-        {filteredHistory.map((entry) => (
-          <ViewStockHistoryCard
-            key={entry.id}
-            entry={entry}
-            currentUser={currentUser}
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+          <input
+            type="text"
+            placeholder="Search by product name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="
+              w-full sm:max-w-sm
+              px-3 py-2 rounded-lg
+              bg-[var(--color-surface)]
+              border border-[var(--color-border)]
+              focus:outline-none
+              focus:border-[var(--color-accent)]
+            "
           />
-        ))}
+        </div>
+
+        {/* KPI Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="p-5 rounded-xl">
+            <p className="text-sm text-[var(--color-muted)]">Total Changes</p>
+            <p className="text-3xl font-bold">{totalChanges}</p>
+          </Card>
+
+          <Card className="p-5 rounded-xl">
+            <p className="text-sm text-[var(--color-muted)]">
+              Products Updated
+            </p>
+            <p className="text-3xl font-bold">{uniqueProducts}</p>
+          </Card>
+        </div>
+
+        {/* States */}
+        {loading && (
+          <div className="flex justify-center py-12">
+            <Spinner />
+          </div>
+        )}
+
+        {error && (
+          <Card className="p-4 border border-red-500/30 text-red-500">
+            {error}
+          </Card>
+        )}
+
+        {!loading && filteredHistory.length === 0 && (
+          <p className="text-center text-[var(--color-muted)]">
+            No stock history found.
+          </p>
+        )}
+
+        {/* History List */}
+        <div className="space-y-4">
+          {filteredHistory.map((entry) => (
+            <ViewStockHistoryCard
+              key={entry.id}
+              entry={entry}
+              currentUser={currentUser}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

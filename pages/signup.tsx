@@ -21,7 +21,6 @@ import "../app/global.css";
 
 export default function SignupPage() {
   const dispatch = useDispatch<AppDispatch>();
-
   const { user, loading, error } = useSelector(
     (state: RootState) => state.user
   );
@@ -52,131 +51,118 @@ export default function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (isAdmin) {
-      const resultAction = await dispatch(createUserByAdmin(formData));
-      if (createUserByAdmin.fulfilled.match(resultAction)) {
-        setSuccessMessage("User created successfully! They can now log in.");
-      }
-    } else {
-      const resultAction = await dispatch(registerUser(formData));
-      if (registerUser.fulfilled.match(resultAction)) {
-        setSuccessMessage("Account created! Please log in.");
-      }
-    }
+    const action = isAdmin
+      ? createUserByAdmin(formData)
+      : registerUser(formData);
 
-    setFormData({
-      username: "",
-      name: "",
-      email: "",
-      password: "",
-      phone: "",
-      profilePicture: "",
-      theme: "light",
-    });
+    const result = await dispatch(action as any);
+
+    if (
+      (isAdmin && createUserByAdmin.fulfilled.match(result)) ||
+      (!isAdmin && registerUser.fulfilled.match(result))
+    ) {
+      setSuccessMessage(
+        isAdmin
+          ? "User created successfully! They can now log in."
+          : "Account created! Please log in."
+      );
+      setFormData({
+        username: "",
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        profilePicture: "",
+        theme: "light",
+      });
+    }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-16">
-      <Card className="w-full max-w-2xl p-10 rounded-3xl slide-up">
-        <header className="mb-10">
-          <h1 className="text-3xl font-bold text-[var(--color-foreground)]">
+    <main className="min-h-screen flex items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-2xl p-6 sm:p-8 md:p-10 rounded-2xl slide-up">
+        <header className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
             {isAdmin ? "Add New User" : "Create an Account"}
           </h1>
-          <p className="mt-3 text-sm text-[var(--color-muted)] max-w-lg">
+          <p className="mt-2 text-xs sm:text-sm text-[var(--color-muted)] max-w-lg">
             {isAdmin
               ? "Register a new staff user with the required access."
               : "Sign up to access the workspace and manage your operations."}
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Username */}
-          <div className="relative md:col-span-1">
-            <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
-
-          {/* Full Name */}
-          <div className="relative md:col-span-1">
-            <FaIdBadge className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              name="name"
-              placeholder="Full name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
-
-          {/* Email */}
-          <div className="relative md:col-span-2">
-            <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email address"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="relative md:col-span-2">
-            <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
-
-          {/* Phone */}
-          <div className="relative md:col-span-1">
-            <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              name="phone"
-              placeholder="Phone number (optional)"
-              value={formData.phone}
-              onChange={handleChange}
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
-
-          {/* Profile Picture */}
-          <div className="relative md:col-span-1">
-            <FaImage className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm" />
-            <input
-              name="profilePicture"
-              placeholder="Profile picture URL (optional)"
-              value={formData.profilePicture}
-              onChange={handleChange}
-              className="input pl-11 py-4 rounded-xl"
-            />
-          </div>
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5"
+        >
+          {[
+            {
+              name: "username",
+              placeholder: "Username",
+              icon: <FaUser />,
+              span: 1,
+            },
+            {
+              name: "name",
+              placeholder: "Full name",
+              icon: <FaIdBadge />,
+              span: 1,
+            },
+            {
+              name: "email",
+              placeholder: "Email address",
+              icon: <FaEnvelope />,
+              span: 2,
+              type: "email",
+            },
+            {
+              name: "password",
+              placeholder: "Password",
+              icon: <FaLock />,
+              span: 2,
+              type: "password",
+            },
+            {
+              name: "phone",
+              placeholder: "Phone number (optional)",
+              icon: <FaPhone />,
+              span: 1,
+            },
+            {
+              name: "profilePicture",
+              placeholder: "Profile picture URL (optional)",
+              icon: <FaImage />,
+              span: 1,
+            },
+          ].map((field) => (
+            <div
+              key={field.name}
+              className={`relative md:col-span-${field.span}`}
+            >
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)]">
+                {field.icon}
+              </span>
+              <input
+                type={field.type || "text"}
+                name={field.name}
+                placeholder={field.placeholder}
+                value={(formData as any)[field.name]}
+                onChange={handleChange}
+                required={field.name !== "phone" && field.name !== "profilePicture"}
+                className="input pl-9 py-2.5 sm:py-3 text-sm rounded-lg transition focus:ring-2 focus:ring-[var(--color-primary)]"
+              />
+            </div>
+          ))}
 
           {/* Theme */}
           <div className="relative md:col-span-2">
-            <FaPalette className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)] text-sm pointer-events-none" />
+            <FaPalette className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--color-muted)] pointer-events-none" />
             <select
               name="theme"
               value={formData.theme}
               onChange={handleChange}
-              className="input pl-11 py-4 rounded-xl"
+              className="input pl-9 py-2.5 sm:py-3 text-sm rounded-lg"
             >
               <option value="light">Light Theme</option>
               <option value="dark">Dark Theme</option>
@@ -184,38 +170,28 @@ export default function SignupPage() {
           </div>
 
           {error && (
-            <p className="md:col-span-2 text-sm text-red-500">
+            <p className="md:col-span-2 text-xs sm:text-sm text-red-500">
               {error}
             </p>
           )}
 
-          <div className="md:col-span-2 mt-4">
+          <div className="md:col-span-2 mt-2">
             <Button
               type="submit"
-              size="md"
               variant="primary"
               disabled={loading}
-              className="w-full interactive py-4 rounded-xl"
+              className="w-full py-2.5 sm:py-3 rounded-lg interactive"
             >
-              {loading ? (
-                <Spinner size="sm" />
-              ) : isAdmin ? (
-                "Create User"
-              ) : (
-                "Sign Up"
-              )}
+              {loading ? <Spinner size="sm" /> : isAdmin ? "Create User" : "Sign Up"}
             </Button>
           </div>
         </form>
 
         {successMessage && (
-          <p className="mt-6 text-sm text-green-500 text-center">
+          <p className="mt-5 text-xs sm:text-sm text-green-500 text-center">
             {successMessage}{" "}
             {!isAdmin && (
-              <Link
-                href="/login"
-                className="text-[var(--color-primary)] underline"
-              >
+              <Link href="/login" className="underline">
                 Go to Login
               </Link>
             )}
@@ -223,12 +199,9 @@ export default function SignupPage() {
         )}
 
         {!isAdmin && (
-          <p className="mt-8 text-sm text-center text-[var(--color-muted)]">
+          <p className="mt-6 text-xs sm:text-sm text-center text-[var(--color-muted)]">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-[var(--color-primary)] hover:underline"
-            >
+            <Link href="/login" className="hover:underline">
               Log in
             </Link>
           </p>

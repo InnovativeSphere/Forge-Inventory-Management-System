@@ -19,7 +19,6 @@ interface CreateSaleProps {
 
 const CreateSale: React.FC<CreateSaleProps> = ({ onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
-
   const products = useSelector((state: RootState) => state.product.products);
   const user = useSelector((state: RootState) => state.user.user);
 
@@ -72,27 +71,27 @@ const CreateSale: React.FC<CreateSaleProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 fade-in">
-      <Card className="w-full max-w-md p-6 relative space-y-4 scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 fade-in p-4 sm:p-6">
+      <Card className="w-full max-w-md p-5 sm:p-6 relative space-y-4 scale-in sm:rounded-2xl shadow-xl">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+          className="absolute top-3 right-3 text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors text-lg sm:text-xl"
           aria-label="Close"
         >
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold tracking-tight">Create Sale</h2>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Create Sale</h2>
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+        <form className="flex flex-col gap-2 sm:gap-3" onSubmit={handleSubmit}>
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Product
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             >
               <option value="">Select a product</option>
               {products.map((p: Product) => (
@@ -103,18 +102,18 @@ const CreateSale: React.FC<CreateSaleProps> = ({ onClose }) => {
             </select>
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Quantity
             <input
               type="number"
               min={1}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Payment Method
             <select
               value={paymentMethod}
@@ -123,7 +122,7 @@ const CreateSale: React.FC<CreateSaleProps> = ({ onClose }) => {
                   e.target.value as "cash" | "card" | "transfer" | "other"
                 )
               }
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             >
               <option value="cash">Cash</option>
               <option value="card">Card</option>
@@ -132,32 +131,42 @@ const CreateSale: React.FC<CreateSaleProps> = ({ onClose }) => {
             </select>
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Customer Name
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Customer Contact
             <input
               type="text"
               value={customerContact}
               onChange={(e) => setCustomerContact(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <div className="flex justify-end gap-3 pt-3">
-            <Button variant="secondary" type="button" onClick={onClose}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto hover:scale-105 transition-transform"
+            >
               Cancel
             </Button>
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? <Spinner size={"md"} /> : "Create Sale"}
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto hover:scale-105 transition-transform flex justify-center items-center gap-2"
+            >
+              {loading ? <Spinner size="sm" /> : "Create Sale"}
             </Button>
           </div>
         </form>

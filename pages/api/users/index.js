@@ -1,6 +1,7 @@
 import {
   registerUser,
   loginUser,
+  logoutUser,
   getUserProfile,
   updateUserProfile,
   updateUserTheme,
@@ -34,6 +35,11 @@ export default async function handler(req, res) {
   const verified = await verifyToken(req, res);
   if (!verified) return;
 
+  /* -------- LOGOUT -------- */
+  if (method === "POST" && action === "logout") {
+    return logoutUser(req, res);
+  }
+
   /* -------- USER SELF -------- */
   if (!id) {
     if (method === "GET") {
@@ -53,7 +59,8 @@ export default async function handler(req, res) {
     if (!isAdmin) return;
 
     if (method === "GET") {
-      if (action === "allUsers" || (!action && !id)) return getAllUsers(req, res);
+      if (action === "allUsers" || (!action && !id))
+        return getAllUsers(req, res);
       if (id) return getUserById(req, res);
     }
 

@@ -89,27 +89,27 @@ const EditSale: React.FC<EditSaleProps> = ({ sale, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/40 fade-in">
-      <Card className="w-full max-w-md p-6 relative space-y-4 scale-in">
+    <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/40 fade-in p-4 sm:p-6">
+      <Card className="w-full max-w-md p-5 sm:p-6 relative space-y-4 scale-in sm:rounded-2xl shadow-xl">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors"
+          className="absolute top-3 right-3 text-[var(--color-muted)] hover:text-[var(--color-foreground)] transition-colors text-lg sm:text-xl"
           aria-label="Close"
         >
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold tracking-tight">Edit Sale</h2>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Edit Sale</h2>
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <form className="flex flex-col gap-3" onSubmit={handleUpdate}>
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+        <form className="flex flex-col gap-2 sm:gap-3" onSubmit={handleUpdate}>
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Product
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
               disabled
             >
               {products.map((p: Product) => (
@@ -120,18 +120,18 @@ const EditSale: React.FC<EditSaleProps> = ({ sale, onClose }) => {
             </select>
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Quantity
             <input
               type="number"
               min={1}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Payment Method
             <select
               value={paymentMethod}
@@ -140,7 +140,7 @@ const EditSale: React.FC<EditSaleProps> = ({ sale, onClose }) => {
                   e.target.value as "cash" | "card" | "transfer" | "other"
                 )
               }
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             >
               <option value="cash">Cash</option>
               <option value="card">Card</option>
@@ -149,37 +149,52 @@ const EditSale: React.FC<EditSaleProps> = ({ sale, onClose }) => {
             </select>
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Customer Name
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <label className="flex flex-col text-[var(--color-foreground)] text-sm">
+          <label className="flex flex-col text-[var(--color-foreground)] text-sm sm:text-sm">
             Customer Contact
             <input
               type="text"
               value={customerContact}
               onChange={(e) => setCustomerContact(e.target.value)}
-              className="mt-1 input"
+              className="mt-1 input text-sm sm:text-sm hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] transition"
             />
           </label>
 
-          <div className="flex justify-between gap-3 pt-3">
-            <Button variant="secondary" type="button" onClick={handleDelete} disabled={loading}>
-              {loading ? <Spinner size={"md"} /> : "Delete"}
+          <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-3 pt-3">
+            <Button
+              className="bg-red-500 text-white hover:bg-red-600 w-full sm:w-auto hover:scale-105 transition-transform"
+              type="button"
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              {loading ? <Spinner size="sm" /> : "Delete"}
             </Button>
 
-            <div className="flex gap-2">
-              <Button variant="secondary" type="button" onClick={onClose}>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={onClose}
+                className="w-full sm:w-auto hover:scale-105 transition-transform"
+              >
                 Cancel
               </Button>
-              <Button variant="primary" type="submit" disabled={loading}>
-                {loading ? <Spinner size={"md"} /> : "Update Sale"}
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto flex justify-center items-center gap-2 hover:scale-105 transition-transform"
+              >
+                {loading ? <Spinner size="sm" /> : "Update Sale"}
               </Button>
             </div>
           </div>

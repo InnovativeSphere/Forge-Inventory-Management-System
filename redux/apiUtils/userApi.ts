@@ -57,6 +57,15 @@ export const userApi = {
   loginUser: (payload: LoginPayload) =>
     axios.post(`${BASE_URL}?action=login`, payload),
 
+  logoutUser: (token: string) =>
+    axios.post(
+      `${BASE_URL}?action=logout`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ),
+
   /* -------- USER SELF -------- */
   fetchProfile: (token: string) =>
     axios.get(BASE_URL, {

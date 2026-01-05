@@ -22,9 +22,10 @@ import { Button } from "../components/Button";
 import { Spinner } from "../components/Spinner";
 
 import { FaSearch, FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import AuthGuard from "../components/AuthGuard";
 import "../app/global.css";
 
-export default function SupplierPage() {
+function SupplierPageContent() {
   const dispatch = useDispatch<AppDispatch>();
   const { suppliers, loading } = useSelector(
     (state: RootState) => state.supplier
@@ -54,7 +55,6 @@ export default function SupplierPage() {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fix for multiple fetches
   const hasFetched = useRef(false);
   useEffect(() => {
     if (!hasFetched.current) {
@@ -70,7 +70,11 @@ export default function SupplierPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Check if form is empty
+  const isFormEmpty = !form.name && !form.company && !form.email && !form.phone && !form.address;
+
   const handleCreate = async () => {
+    if (isFormEmpty) return; // prevent empty submission
     await dispatch(createSupplier(form) as any);
     setForm({ name: "", company: "", email: "", phone: "", address: "" });
     dispatch(fetchAllSuppliers() as any);
@@ -102,10 +106,10 @@ export default function SupplierPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6 fade-in">
+    <div className="max-w-6xl p-4  mx-auto px-4 sm:px-6 py-6 space-y-6 fade-in">
       {/* HEADER */}
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
           Supplier Management
         </h1>
         <p className="text-sm text-[var(--color-muted)]">
@@ -114,38 +118,14 @@ export default function SupplierPage() {
       </div>
 
       {/* CREATE FORM */}
-      <Card className="card p-5 space-y-3">
-        <h2 className="text-lg font-semibold">Add Supplier</h2>
+      <Card className="card p-4 sm:p-5 space-y-4">
+        <h2 className="text-base sm:text-lg font-semibold">Add Supplier</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Supplier name"
-            className="input"
-          />
-          <input
-            name="company"
-            value={form.company}
-            onChange={handleChange}
-            placeholder="Company"
-            className="input"
-          />
-          <input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="input"
-          />
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            placeholder="Phone"
-            className="input"
-          />
+          <input name="name" value={form.name} onChange={handleChange} placeholder="Supplier name" className="input" />
+          <input name="company" value={form.company} onChange={handleChange} placeholder="Company" className="input" />
+          <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="input" />
+          <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="input" />
         </div>
 
         <input
@@ -156,11 +136,9 @@ export default function SupplierPage() {
           className="input w-full"
         />
 
-        <div className="pt-2">
-          <Button variant="primary" onClick={handleCreate}>
-            Create Supplier
-          </Button>
-        </div>
+        <Button variant="primary" onClick={handleCreate} disabled={isFormEmpty}>
+          Create Supplier
+        </Button>
       </Card>
 
       {/* SEARCH */}
@@ -171,15 +149,15 @@ export default function SupplierPage() {
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search suppliers..."
-            className="input pl-10 border border-[var(--color-border)] focus:border-[var(--color-accent)] py-2"
+            className="input pl-10 py-2"
           />
         </div>
       </Card>
 
       {/* SUPPLIER LIST */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {loading && (
-          <div className="flex justify-center py-5">
+          <div className="flex justify-center py-6">
             <Spinner />
           </div>
         )}
@@ -188,34 +166,25 @@ export default function SupplierPage() {
           normalizedSuppliers.map((sup) => (
             <Card
               key={sup.id}
-              className="card px-4 py-2 flex items-center justify-between hover:shadow-[var(--shadow-lift)]"
+              className="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:shadow-[var(--shadow-lift)]"
             >
               <div>
                 <p className="font-semibold">{sup.name}</p>
                 {sup.company && (
-                  <p className="text-sm text-[var(--color-muted)]">{sup.company}</p>
+                  <p className="text-sm text-[var(--color-muted)]">
+                    {sup.company}
+                  </p>
                 )}
               </div>
 
-              <div className="flex gap-3 text-[var(--color-accent)]">
-                <button
-                  onClick={() => setSelectedSupplier(sup)}
-                  className="hover:opacity-80"
-                >
+              <div className="flex gap-4 text-[var(--color-accent)]">
+                <button onClick={() => setSelectedSupplier(sup)} className="p-1">
                   <FaEye />
                 </button>
-
-                <button
-                  onClick={() => setEditSupplier(sup)}
-                  className="hover:opacity-80"
-                >
+                <button onClick={() => setEditSupplier(sup)} className="p-1">
                   <FaEdit />
                 </button>
-
-                <button
-                  onClick={() => setDeleteId(sup.id)}
-                  className="text-red-500 hover:opacity-80"
-                >
+                <button onClick={() => setDeleteId(sup.id)} className="p-1 text-red-500">
                   <FaTrash />
                 </button>
               </div>
@@ -225,10 +194,12 @@ export default function SupplierPage() {
 
       {/* DELETE MODAL */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 fade-in">
-          <Card className="card p-5 w-full max-w-sm scale-in space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <Card className="card p-5 w-full max-w-sm space-y-3">
             <p className="font-semibold text-lg">Delete supplier?</p>
-            <p className="text-sm text-[var(--color-muted)]">This action cannot be undone.</p>
+            <p className="text-sm text-[var(--color-muted)]">
+              This action cannot be undone.
+            </p>
 
             <div className="flex justify-end gap-3">
               <Button variant="secondary" onClick={() => setDeleteId(null)}>
@@ -242,7 +213,6 @@ export default function SupplierPage() {
         </div>
       )}
 
-      {/* VIEW DETAILS MODAL */}
       {selectedSupplier && (
         <SupplierDetails
           supplier={selectedSupplier}
@@ -250,7 +220,6 @@ export default function SupplierPage() {
         />
       )}
 
-      {/* EDIT MODAL */}
       {editSupplier && (
         <EditSupplier
           supplier={editSupplier}
@@ -259,5 +228,13 @@ export default function SupplierPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SupplierPage() {
+  return (
+    <AuthGuard>
+      <SupplierPageContent />
+    </AuthGuard>
   );
 }

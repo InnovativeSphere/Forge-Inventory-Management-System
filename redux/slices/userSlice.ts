@@ -64,6 +64,28 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+/* --- LOGOUT --- */
+export const logoutUser = createAsyncThunk(
+  "user/logoutUser",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = selectToken(getState() as RootState);
+      if (!token) throw new Error("No token");
+
+      // call backend logout
+      await userApi.logoutUser(token);
+
+      // clear localStorage
+      removeToken();
+
+      // return true to trigger fulfilled reducer
+      return true;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Logout failed");
+    }
+  }
+);
+
 /* --- SELF --- */
 export const fetchCurrentUser = createAsyncThunk(
   "user/fetchCurrent",
@@ -72,7 +94,7 @@ export const fetchCurrentUser = createAsyncThunk(
       const stateToken = selectToken(getState() as RootState);
       const token = args.token ?? stateToken;
       if (!token) throw new Error("No token");
-      const res = await userApi.fetchProfile(token); // fixed route
+      const res = await userApi.fetchProfile(token);
       return mapMongoId(res.data.user);
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || "Fetch failed");
@@ -217,6 +239,7 @@ const userSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.currentUser = null;
       state.token = undefined;
       removeToken();
     },
@@ -234,6 +257,7 @@ const userSlice = createSlice({
     [
       registerUser,
       loginUser,
+      logoutUser,
       fetchCurrentUser,
       updateProfile,
       updateUserTheme,
@@ -258,6 +282,11 @@ const userSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.token = action.payload.token ?? getToken();
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.currentUser = null;
+        state.token = undefined;
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action: any) => {
         state.loading = false;
