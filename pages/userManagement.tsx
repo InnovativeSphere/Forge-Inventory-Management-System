@@ -230,7 +230,8 @@ function UserManagementContent() {
                       </Button>
                       <Button
                         size="sm"
-                        variant="primary"
+                        // variant="primary"
+                        className="bg-red-400 hover:bg-red-500"
                         onClick={() => handleDelete(user._id)}
                         disabled={actionLoading === user._id}
                       >

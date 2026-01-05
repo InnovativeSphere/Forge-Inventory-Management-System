@@ -49,7 +49,7 @@ export default function EditSupplier({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 fade-in p-4">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 fade-in p-4">
       <div
         className="card w-80 max-w-md sm:max-w-sm p-5 sm:p-4 rounded-xl space-y-4 relative scale-in
                       mx-2 sm:mx-4"

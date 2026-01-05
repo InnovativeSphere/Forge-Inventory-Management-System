@@ -81,7 +81,7 @@ export default function SidebarLayout({
                       ${
                         isActive
                           ? "bg-[var(--color-accent)] text-white"
-                          : "text-[var(--color-muted)] hover:bg-[var(--color-accent)]/20 hover:text-white"
+                          : "text-(--color-muted) hover:bg-[var(--color-accent)]/20 hover:text-white"
                       }`}
                   >
                     <Icon
@@ -89,7 +89,9 @@ export default function SidebarLayout({
                         isActive ? "text-white" : "text-[var(--color-accent)]"
                       }`}
                     />
-                    {sidebarOpen && <span>{label}</span>}
+                    {sidebarOpen && <span className={`text-xs ${
+                        isActive ? "text-white" : "text-[var(--color-accent)]"
+                      }`}>{label}</span>}
                   </Link>
                 </li>
               );
@@ -100,8 +102,8 @@ export default function SidebarLayout({
 
       {/* Main Content */}
       <main
-        className="flex-1 transition-all duration-300"
-        style={{ marginLeft: sidebarWidth }}
+        className="flex-1 transition-all duration-300 relative"
+        style={{ marginLeft: sidebarWidth, zIndex: 0 }}
       >
         {children}
       </main>

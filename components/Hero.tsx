@@ -15,7 +15,7 @@ const heroSlides: HeroItem[] = [
     id: 1,
     image:
       "https://cdn.pixabay.com/photo/2024/07/25/14/54/warehouse-8921538_1280.jpg",
-    title: "Real‑Time Inventory Views",
+    title: "Real-Time Inventory Views",
     description:
       "See your inventory levels update instantly, keeping you informed and in control.",
   },
@@ -33,7 +33,7 @@ const heroSlides: HeroItem[] = [
       "https://cdn.pixabay.com/photo/2016/11/27/21/42/stock-1863880_1280.jpg",
     title: "Actionable Insights",
     description:
-      "Turn data into smart decisions with built‑in analytics you’ll actually use.",
+      "Turn data into smart decisions with built-in analytics you’ll actually use.",
   },
   {
     id: 4,
@@ -56,10 +56,8 @@ const heroSlides: HeroItem[] = [
 export const Hero: FC = () => {
   const [index, setIndex] = useState(0);
   const autoRef = useRef<number | null>(null);
-
   const length = heroSlides.length;
 
-  // Auto‑slide interval
   useEffect(() => {
     startAuto();
     return stopAuto;
@@ -85,39 +83,47 @@ export const Hero: FC = () => {
   const computeStyle = (i: number) => {
     const offset = i - index;
     let wrapped = offset;
-    if (offset > length / 2) wrapped = offset - length;
-    if (offset < -length / 2) wrapped = offset + length;
+    if (offset > length / 2) wrapped -= length;
+    if (offset < -length / 2) wrapped += length;
 
     const abs = Math.abs(wrapped);
-    const translateX = wrapped * 30;
-    const rotateY = wrapped * 6;
-    const scale = 1 - abs * 0.08;
-    const opacity = 1 - abs * 0.2;
-    const zIndex = 30 - abs * 5;
 
     return {
-      transform: `translateX(${translateX}%) rotateY(${rotateY}deg) scale(${scale})`,
-      opacity,
-      zIndex,
-      filter: `blur(${Math.min(abs * 4, 6)}px)`,
+      transform: `translateX(${wrapped * 22}%) rotateY(${
+        wrapped * 4
+      }deg) scale(${1 - abs * 0.06})`,
+      opacity: 1 - abs * 0.18,
+      zIndex: 40 - abs * 6,
+      filter: `blur(${Math.min(abs * 3, 4)}px)`,
       transition:
-        "transform 400ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease, filter 400ms ease",
+        "transform 420ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease, filter 400ms ease",
     } as React.CSSProperties;
   };
 
   return (
-    <section className="py-14 px-4 sm:px-6 md:px-8 bg-[var(--color-background)]">
+    <section className="py-16 px-4 sm:px-6 md:px-8 bg-(--color-background)">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-foreground)] text-center mb-8">
+        <h2 className="text-2xl mb-20 sm:text-3xl font-bold text-(--color-foreground) text-center">
           See What Makes Forge IMS Worth It
         </h2>
 
         <div className="relative overflow-visible">
-          <div className="relative my-16 h-56 sm:h-64 md:h-72 flex items-center justify-center">
+          {/* SLIDES */}
+          <div className="relative h-80 sm:h-[360px] md:h-[400px] md:mb-24 flex items-center justify-center">
             {heroSlides.map((slide, i) => (
               <Card
                 key={slide.id}
-                className="absolute w-[80%] sm:w-[60%] md:w-[48%] rounded-lg overflow-hidden shadow-md cursor-grab"
+                className="
+                  absolute
+                  w-[90%]
+                  sm:w-[70%]
+                  md:w-[52%]
+                  lg:w-[46%]
+                  rounded-xl
+                  overflow-hidden
+                  shadow-md
+                  select-none
+                "
                 style={computeStyle(i)}
                 onMouseEnter={stopAuto}
                 onMouseLeave={startAuto}
@@ -125,13 +131,13 @@ export const Hero: FC = () => {
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="w-full h-36 sm:h-44 md:h-48 object-cover"
+                  className="w-full h-40 sm:h-44 md:h-48 object-cover"
                 />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-[var(--color-foreground)]">
+                <div className="p-4 sm:p-5">
+                  <h3 className="text-base sm:text-lg font-semibold text-(--color-foreground)">
                     {slide.title}
                   </h3>
-                  <p className="text-sm text-[var(--color-muted)] mt-1">
+                  <p className="text-sm text-(--color-muted) mt-1 leading-relaxed">
                     {slide.description}
                   </p>
                 </div>
@@ -139,33 +145,34 @@ export const Hero: FC = () => {
             ))}
           </div>
 
-          {/* Controls */}
+          {/* CONTROLS */}
           <button
-            aria-label="Previous slide"
             onClick={goPrev}
-            className="absolute left-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-accent)] hover:text-white transition"
+            aria-label="Previous slide"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-(--color-card) border border-[var(--color-border)] hover:bg-[var(--color-accent)] hover:text-white transition"
           >
             ‹
           </button>
           <button
-            aria-label="Next slide"
             onClick={goNext}
-            className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full bg-[var(--color-card)] border border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-accent)] hover:text-white transition"
+            aria-label="Next slide"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-(--color-card) border border-[var(--color-border)] hover:bg-[var(--color-accent)] hover:text-white transition"
           >
             ›
           </button>
 
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-6">
+          {/* DOTS */}
+          <div className="flex justify-center gap-2 mt-20">
             {heroSlides.map((_, i) => (
               <button
                 key={i}
                 aria-label={`Slide ${i + 1}`}
                 onClick={() => setIndex(i)}
-                className="w-2.5 h-2.5 rounded-full"
+                className="w-2 h-2 rounded-sm transition-all"
                 style={{
                   background:
                     i === index ? "var(--color-accent)" : "var(--color-border)",
+                  transform: i === index ? "scale(1.2)" : "scale(1)",
                 }}
               />
             ))}

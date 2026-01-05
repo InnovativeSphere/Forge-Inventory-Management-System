@@ -23,6 +23,7 @@ import { Spinner } from "../components/Spinner";
 
 import { FaSearch, FaEdit, FaTrash, FaEye } from "react-icons/fa";
 import AuthGuard from "../components/AuthGuard";
+import { createPortal } from "react-dom";
 import "../app/global.css";
 
 function SupplierPageContent() {
@@ -70,11 +71,11 @@ function SupplierPageContent() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Check if form is empty
-  const isFormEmpty = !form.name && !form.company && !form.email && !form.phone && !form.address;
+  const isFormEmpty =
+    !form.name && !form.company && !form.email && !form.phone && !form.address;
 
   const handleCreate = async () => {
-    if (isFormEmpty) return; // prevent empty submission
+    if (isFormEmpty) return;
     await dispatch(createSupplier(form) as any);
     setForm({ name: "", company: "", email: "", phone: "", address: "" });
     dispatch(fetchAllSuppliers() as any);
@@ -105,8 +106,19 @@ function SupplierPageContent() {
     [dispatch]
   );
 
+  // Portal helper to render modals over everything
+  const ModalPortal = ({ children }: { children: React.ReactNode }) => {
+    if (typeof window === "undefined") return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4">
+        {children}
+      </div>,
+      document.body
+    );
+  };
+
   return (
-    <div className="max-w-6xl p-4  mx-auto px-4 sm:px-6 py-6 space-y-6 fade-in">
+    <div className="max-w-6xl p-4 mx-auto sm:px-6 py-6 space-y-6 fade-in">
       {/* HEADER */}
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -122,10 +134,34 @@ function SupplierPageContent() {
         <h2 className="text-base sm:text-lg font-semibold">Add Supplier</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input name="name" value={form.name} onChange={handleChange} placeholder="Supplier name" className="input" />
-          <input name="company" value={form.company} onChange={handleChange} placeholder="Company" className="input" />
-          <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="input" />
-          <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="input" />
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Supplier name"
+            className="input"
+          />
+          <input
+            name="company"
+            value={form.company}
+            onChange={handleChange}
+            placeholder="Company"
+            className="input"
+          />
+          <input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="input"
+          />
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="Phone"
+            className="input"
+          />
         </div>
 
         <input
@@ -178,13 +214,19 @@ function SupplierPageContent() {
               </div>
 
               <div className="flex gap-4 text-[var(--color-accent)]">
-                <button onClick={() => setSelectedSupplier(sup)} className="p-1">
+                <button
+                  onClick={() => setSelectedSupplier(sup)}
+                  className="p-1"
+                >
                   <FaEye />
                 </button>
                 <button onClick={() => setEditSupplier(sup)} className="p-1">
                   <FaEdit />
                 </button>
-                <button onClick={() => setDeleteId(sup.id)} className="p-1 text-red-500">
+                <button
+                  onClick={() => setDeleteId(sup.id)}
+                  className="p-1 text-red-500"
+                >
                   <FaTrash />
                 </button>
               </div>
@@ -194,38 +236,49 @@ function SupplierPageContent() {
 
       {/* DELETE MODAL */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <Card className="card p-5 w-full max-w-sm space-y-3">
-            <p className="font-semibold text-lg">Delete supplier?</p>
-            <p className="text-sm text-[var(--color-muted)]">
-              This action cannot be undone.
-            </p>
+        <ModalPortal>
+          <div className="bg-black/40 backdrop-blur-sm w-full max-w-sm sm:max-w-md p-4 rounded-lg">
+            <Card className="p-5 space-y-3">
+              <p className="font-semibold text-lg">Delete supplier?</p>
+              <p className="text-sm text-[var(--color-muted)]">
+                This action cannot be undone.
+              </p>
 
-            <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setDeleteId(null)}>
-                Cancel
-              </Button>
-              <Button variant="secondary" onClick={handleDelete}>
-                Delete
-              </Button>
-            </div>
-          </Card>
-        </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="secondary" onClick={() => setDeleteId(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-red-400 hover:bg-red-500"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </ModalPortal>
       )}
 
+      {/* SUPPLIER DETAILS MODAL */}
       {selectedSupplier && (
-        <SupplierDetails
-          supplier={selectedSupplier}
-          onClose={() => setSelectedSupplier(null)}
-        />
+        <ModalPortal>
+          <SupplierDetails
+            supplier={selectedSupplier}
+            onClose={() => setSelectedSupplier(null)}
+          />
+        </ModalPortal>
       )}
 
+      {/* EDIT SUPPLIER MODAL */}
       {editSupplier && (
-        <EditSupplier
-          supplier={editSupplier}
-          onClose={() => setEditSupplier(null)}
-          onSave={handleUpdate}
-        />
+        <ModalPortal>
+          <EditSupplier
+            supplier={editSupplier}
+            onClose={() => setEditSupplier(null)}
+            onSave={handleUpdate}
+          />
+        </ModalPortal>
       )}
     </div>
   );
